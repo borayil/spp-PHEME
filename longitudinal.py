@@ -80,7 +80,7 @@ for t in thread_dictionaries:
     elapsed = end_time - start_time
 
     # We must have this amount of +5 added to start_time for a nice graph from beginning to end
-    min_interval = 2
+    min_interval = 10
     number_of_intervals = ceil(elapsed / timedelta(minutes=min_interval))
     x_axis = [start_time + timedelta(minutes=x * min_interval) for x in range(number_of_intervals+1)]
 
@@ -105,7 +105,10 @@ for t in thread_dictionaries:
         y_axis.append(count)
 
     # Plot the axis
-    plt.plot_date(x_axis, y_axis)
+    # https://www.youtube.com/watch?v=_LWjaAiKaf8
+    plt.plot_date(x_axis, y_axis, linestyle='solid')
+    plt.gcf().autofmt_xdate()
+    plt.tight_layout()
     plt.show()
 
 
