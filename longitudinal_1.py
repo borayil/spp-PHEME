@@ -78,9 +78,7 @@ for t in thread_dictionaries:
     start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
     end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
     elapsed = end_time - start_time
-
-    # We must have this amount of +5 added to start_time for a nice graph from beginning to end
-    min_interval = 10
+    min_interval = 30
     number_of_intervals = ceil(elapsed / timedelta(minutes=min_interval))
     x_axis = [start_time + timedelta(minutes=x * min_interval) for x in range(number_of_intervals+1)]
 
@@ -89,7 +87,7 @@ for t in thread_dictionaries:
     
     # We iterate the timestamps and for each timestamp, we count the amount of reactions that are before or on it
     
-    print("HOHOHOHOHOH")
+    print("=====")
     print("Start time:")
     print(start_time)
     print("End time:")
@@ -97,16 +95,14 @@ for t in thread_dictionaries:
 
     for timestamp in x_axis:
         count = 0
-        
-        for r in rs:
-            
+        for r in rs: 
             if datetime.strptime(r.get('created_at'), '%Y-%m-%d %H:%M:%S') <= timestamp:
                 count = count + 1
         y_axis.append(count)
 
     # Plot the axis
     # https://www.youtube.com/watch?v=_LWjaAiKaf8
-    plt.plot_date(x_axis, y_axis, linestyle='solid')
+    plt.plot_date(x_axis, y_axis, linestyle='solid', markersize=2, color='red' )
     plt.gcf().autofmt_xdate()
     plt.tight_layout()
     plt.show()
