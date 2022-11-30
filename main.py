@@ -29,7 +29,7 @@ for event_name in event_names:
         # TODO: Read in retweets
 
         # TODO: Read in structure
-        
+
         """
         # Read in who-follows-whom.dat
         path_to_who_follows_whom = os.path.join(path_to_thread, 'who-follows-whom.dat')
@@ -130,20 +130,18 @@ for event_name in event_names:
     # Formulating y-axis
     y_axis = []
 
-    # We iterate the timestamps and for each timestamp, we count the amount of reactions that are before or on it
-
-    print("=====")
-    print("Start time:")
-    print(start_time)
-    print("End time:")
-    print(end_time)
-
-    # TODO: This is super inefficient. Reactions should be iterated
+    curr_reaction_idx = 0
+    count = 0
     for timestamp in x_axis:
-        count = 0
-        for r in all_reactions: 
-            if datetime.strptime(r.get('created_at'), '%Y-%m-%d %H:%M:%S') <= timestamp:
-                count = count + 1
+        print(count)
+        # check for out of bounds
+        if curr_reaction_idx >= len(all_reactions):
+            break
+        while (datetime.strptime(all_reactions[curr_reaction_idx].get('created_at'), '%Y-%m-%d %H:%M:%S') <= timestamp):
+            count += 1
+            curr_reaction_idx += 1
+            if curr_reaction_idx >= len(all_reactions):
+                break
         y_axis.append(count)
 
     # Plot the axis
