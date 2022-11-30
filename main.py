@@ -153,4 +153,6 @@ for event_name in event_names:
     plt.gcf().autofmt_xdate()
     plt.tight_layout()
     plt.savefig(event_name)
+    plt.close()
     print(event_name + " saved.")
+    
