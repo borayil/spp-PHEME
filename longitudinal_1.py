@@ -105,18 +105,18 @@ for filename in os.listdir(path_to_event):
     thread_dictionaries.append(thread_dictionary)
 
 # PLOT 1
-thread_dictionaries = sorted(thread_dictionaries, key=lambda d: d['no_of_reactions'], reverse=True)
 
-top_x = 10 # top threads we want from the ranking by no of reactions
-top_10_thread_dictionaries = thread_dictionaries[:top_x]
+# To sort by no of reactions
+#thread_dictionaries = sorted(thread_dictionaries, key=lambda d: d['no_of_reactions'], reverse=True)
+#top_x = 10 # top threads we want from the ranking by no of reactions
+#top_10_thread_dictionaries = thread_dictionaries[:top_x]
 # Plot reactions over time for each thread
-for t in top_10_thread_dictionaries:
+for t in thread_dictionaries:
     start_time = t.get('source_tweet').get('created_at')
 
     # Sort threads reactions by time posted (earlier to later)
     rs = t.get('reactions')
     rs = sorted(rs, key=lambda d: d['created_at'])
-    
     
     end_time = rs[-1].get('created_at')
 
@@ -146,6 +146,7 @@ for t in top_10_thread_dictionaries:
                 count = count + 1
         y_axis.append(count)
 
+    """
     # Plot the axis
     # https://www.youtube.com/watch?v=_LWjaAiKaf8
     plt.xlabel("Timestamps")
@@ -154,6 +155,7 @@ for t in top_10_thread_dictionaries:
     plt.gcf().autofmt_xdate()
     plt.tight_layout()
     plt.show()
+    """
 
 print("plot 2")
 # PLOT 2
