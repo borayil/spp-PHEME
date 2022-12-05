@@ -30,22 +30,15 @@ for event_name in event_names:
             source_tweet = json.load(f)
             sid = source_tweet.get("user").get("id")
             if (not sid in source_user_ids):
-                source_user_ids.append(str(id))
-
+                source_user_ids.append(str(sid))
+    
+    
+            
     for filename in os.listdir(path_to_event):
         thread_id = filename
         path_to_thread = os.path.join(path_to_event,filename)
         assert (not os.path.isfile(path_to_thread)) # Assert that this is a directory, not file
         
-        # Read in annotation
-        path_to_annotation = os.path.join(path_to_thread, 'annotation.json')
-        with open(path_to_annotation, 'r') as f:
-            annotation = json.load(f)
-        
-        # TODO: Read in retweets
-
-        # TODO: Read in structure
-
         # Read in who-follows-whom.dat
         path_to_who_follows_whom = os.path.join(path_to_thread, 'who-follows-whom.dat')
         with open(path_to_who_follows_whom, 'r') as f:
@@ -73,10 +66,12 @@ for event_name in event_names:
                 user_follow_dictionary[user2] = {'id': user2, 'followers': [user1], 'following': []}
             
             if (user1 in source_user_ids):
+                #print("yeee")
                 user_follow_dictionary[user1]['is_source_user'] = True
             else:
                 user_follow_dictionary[user1]['is_source_user'] = False
             if (user2 in source_user_ids):
+                #print("yeee")
                 user_follow_dictionary[user2]['is_source_user'] = True
             else:
                 user_follow_dictionary[user2]['is_source_user'] = False
@@ -86,6 +81,9 @@ for event_name in event_names:
         for u in user_follow_dictionary:
             user_dict = user_follow_dictionary[u]
             user_follow_list.append(user_dict)
+        
+        
+        
     
         # Read in source tweet(s) 
         path_to_source_tweet = os.path.join(path_to_thread, 'source-tweets', filename + '.json')
@@ -119,10 +117,6 @@ for event_name in event_names:
             'source_tweet': source_tweet,
             'no_of_reactions': len(reactions),
             'reactions': reactions,
-            'annotation': annotation,
-            # retweets
-            # structure
-            # who-follows-whom
             }
         thread_dictionaries.append(thread_dictionary)
 
@@ -172,9 +166,4 @@ for event_name in event_names:
     plt.close()
     print(event_name + " saved.")
 
-    for u in user_follow_list:
-        what = u.get("is_source_user")
-        if what:
-            print(what)
-    exit()
     
