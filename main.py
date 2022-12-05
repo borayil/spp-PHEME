@@ -9,13 +9,29 @@ from matplotlib import dates
 # Read thread by thread
 event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
 'prince-toronto', 'putinmissing', 'sydneysiege']
+event_names = ['charliehebdo']
 
 for event_name in event_names:
     follow_tuples = []
     user_follow_dictionary = {}
     user_follow_list = []
+    source_user_ids = []
     thread_dictionaries = []
     path_to_event = os.path.join('.', 'PhemeDataset', 'threads', 'en', event_name)
+
+    # Store all source user ids
+    for filename in os.listdir(path_to_event):
+        thread_id = filename
+        path_to_thread = os.path.join(path_to_event,filename)
+        assert (not os.path.isfile(path_to_thread)) # Assert that this is a directory, not file
+        # Read in source tweet ids 
+        path_to_source_tweet = os.path.join(path_to_thread, 'source-tweets', filename + '.json')
+        with open(path_to_source_tweet, 'r') as f:
+            source_tweet = json.load(f)
+            sid = source_tweet.get("user").get("id")
+            if (not sid in source_user_ids):
+                source_user_ids.append(str(id))
+
     for filename in os.listdir(path_to_event):
         thread_id = filename
         path_to_thread = os.path.join(path_to_event,filename)
@@ -30,7 +46,6 @@ for event_name in event_names:
 
         # TODO: Read in structure
 
-        """
         # Read in who-follows-whom.dat
         path_to_who_follows_whom = os.path.join(path_to_thread, 'who-follows-whom.dat')
         with open(path_to_who_follows_whom, 'r') as f:
@@ -42,12 +57,11 @@ for event_name in event_names:
 
             # user1 follows user2
             follow_tuples.append((user1,user2))
-        """
-        
         
         for t in follow_tuples:
             user1 = t[0]
             user2 = t[1]
+            
             if user1 in user_follow_dictionary:
                 user_follow_dictionary[user1].get('following').append(user2)
             else:
@@ -57,19 +71,22 @@ for event_name in event_names:
                 user_follow_dictionary[user2].get('followers').append(user1)
             else:
                 user_follow_dictionary[user2] = {'id': user2, 'followers': [user1], 'following': []}
+            
+            if (user1 in source_user_ids):
+                user_follow_dictionary[user1]['is_source_user'] = True
+            else:
+                user_follow_dictionary[user1]['is_source_user'] = False
+            if (user2 in source_user_ids):
+                user_follow_dictionary[user2]['is_source_user'] = True
+            else:
+                user_follow_dictionary[user2]['is_source_user'] = False
         
         # We used dictionary to make it easier to index via id
         # Now we can turn dictionary to list
         for u in user_follow_dictionary:
             user_dict = user_follow_dictionary[u]
             user_follow_list.append(user_dict)
-
-        for u in user_follow_list:
-            u['no_of_followers'] = len(u.get('followers'))
-
-        user_follow_list = sorted(user_follow_list, key=lambda d: d['no_of_followers'], reverse=True)
-        top_10_most_follower_users = user_follow_list[:10]
-        
+    
         # Read in source tweet(s) 
         path_to_source_tweet = os.path.join(path_to_thread, 'source-tweets', filename + '.json')
         with open(path_to_source_tweet, 'r') as f:
@@ -133,7 +150,6 @@ for event_name in event_names:
     curr_reaction_idx = 0
     count = 0
     for timestamp in x_axis:
-        print(count)
         # check for out of bounds
         if curr_reaction_idx >= len(all_reactions):
             break
@@ -155,4 +171,10 @@ for event_name in event_names:
     plt.savefig(event_name)
     plt.close()
     print(event_name + " saved.")
+
+    for u in user_follow_list:
+        what = u.get("is_source_user")
+        if what:
+            print(what)
+    exit()
     
