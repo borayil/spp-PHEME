@@ -1,3 +1,6 @@
+# NOTE: The use of str() to convert user ids is VERY IMPORTANT in this script.
+# Most issued faced when checking / comparing ids was related to this, caused by how JSON files are loaded
+
 from math import ceil
 import os
 import pandas as pd
@@ -44,9 +47,9 @@ for event_name in event_names:
         with open(path_to_who_follows_whom, 'r') as f:
             lines = f.readlines()
         for l in lines:
-            str = l.split()
-            user1 = str[0]
-            user2 = str[1]
+            string = l.split()
+            user1 = string[0]
+            user2 = string[1]
 
             # user1 follows user2
             follow_tuples.append((user1,user2))
@@ -54,7 +57,6 @@ for event_name in event_names:
         for t in follow_tuples:
             user1 = t[0]
             user2 = t[1]
-            
             if user1 in user_follow_dictionary:
                 user_follow_dictionary[user1].get('following').append(user2)
             else:
@@ -66,23 +68,15 @@ for event_name in event_names:
                 user_follow_dictionary[user2] = {'id': user2, 'followers': [user1], 'following': []}
             
             if (user1 in source_user_ids):
-                #print("yeee")
                 user_follow_dictionary[user1]['is_source_user'] = True
             else:
                 user_follow_dictionary[user1]['is_source_user'] = False
             if (user2 in source_user_ids):
-                #print("yeee")
                 user_follow_dictionary[user2]['is_source_user'] = True
             else:
                 user_follow_dictionary[user2]['is_source_user'] = False
         
-        # We used dictionary to make it easier to index via id
-        # Now we can turn dictionary to list
-        for u in user_follow_dictionary:
-            user_dict = user_follow_dictionary[u]
-            user_follow_list.append(user_dict)
-        
-        
+        # We use a dictionary to make it easier to index via id
         
     
         # Read in source tweet(s) 
@@ -120,13 +114,40 @@ for event_name in event_names:
             }
         thread_dictionaries.append(thread_dictionary)
 
+    # Rank threads by most popular source tweets
+    # w.r.t. nr of total reactions AND nr of reactions who actually follow the user
+    
+    # w.r.t. nr of total reactions (highest to lowest)
+    thread_dictionaries_by_reactions = sorted(thread_dictionaries, key=lambda d: d['no_of_reactions'], reverse=True)
+
+    
+    # w.r.t. nr of reactions following source
+    thread_dictionaries_by_following = None
+    # Label each thread with a count of nr of reactions who actually follow the source tweeter
+    for t in thread_dictionaries:
+        sid = t.get("source_tweet").get("user").get("id")
+        curr_count = 0
+        for r in t.get("reactions"):
+            # Get reactee id
+            rid = r.get("user").get("id")
+            rid = str(rid)
+            res = user_follow_dictionary.get(rid)
+
+            # The reactee may not be within who-follows-whom
+            if res is not None:
+                # Check if reactee actually follows source
+                if str(sid) in res.get("following"):
+                    curr_count += 1
+        t["nr_of_reactions_following_source"] = curr_count
+
+    thread_dictionaries_by_following = sorted(thread_dictionaries, key=lambda d: d['nr_of_reactions_following_source'], reverse=True)
+
     # Iterate all threads and combine all reactions into one
     all_reactions = []
     for t in thread_dictionaries:
         reactions = t.get("reactions")
         for r in reactions:
             all_reactions.append(r)
-
 
     all_reactions = sorted(all_reactions, key=lambda d: d['created_at'], reverse=False)
     start_time = all_reactions[0].get("created_at")
