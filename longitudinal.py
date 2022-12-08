@@ -9,12 +9,58 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from matplotlib import dates
 
+# Plots given reactions with timestamps on given filename
+def plot_reactions(reactions, event_name, rumour=""):
+    if len(reactions) <= 0:
+        return
+    assert (not event_name is None)
+
+    # Plot rumour
+    reactions = sorted(reactions, key=lambda d: d['created_at'], reverse=False)
+    start_time = reactions[0].get("created_at")
+    start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+    end_time = reactions[-1].get("created_at")
+    end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+    elapsed = end_time - start_time
+    min_interval = 5
+    number_of_intervals = ceil(elapsed / timedelta(minutes=min_interval))
+    x_axis = [start_time + timedelta(minutes=x * min_interval) for x in range(number_of_intervals+1)]
+
+    # Formulating y-axis
+    y_axis = []
+
+    curr_reaction_idx = 0
+    count = 0
+    for timestamp in x_axis:
+        # check for out of bounds
+        if curr_reaction_idx >= len(reactions):
+            break
+        while (datetime.strptime(reactions[curr_reaction_idx].get('created_at'), '%Y-%m-%d %H:%M:%S') <= timestamp):
+            count += 1
+            curr_reaction_idx += 1
+            if curr_reaction_idx >= len(reactions):
+                break
+        y_axis.append(count)
+
+    # Plot the axis
+    file_name = event_name + rumour
+    plt.title(file_name)
+    plt.xlabel("Timestamps")
+    plt.ylabel("No. of reactions")
+    plt.plot_date(x_axis, y_axis, linestyle='solid', markersize=2, color='red' )
+    plt.gcf().autofmt_xdate()
+    plt.tight_layout()
+    plt.savefig(file_name)
+    plt.close()
+    print(file_name + "saved.")
+
+
 # Read thread by thread
 event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
 'prince-toronto', 'putinmissing', 'sydneysiege']
-event_names = ['charliehebdo']
 
 for event_name in event_names:
+    # Go to initial dir
     follow_tuples = []
     user_follow_dictionary = {}
     user_follow_list = []
@@ -44,6 +90,8 @@ for event_name in event_names:
         
         # Read in who-follows-whom.dat
         path_to_who_follows_whom = os.path.join(path_to_thread, 'who-follows-whom.dat')
+        if (not os.path.isfile(path_to_who_follows_whom)):
+            continue
         with open(path_to_who_follows_whom, 'r') as f:
             lines = f.readlines()
         for l in lines:
@@ -77,7 +125,6 @@ for event_name in event_names:
                 user_follow_dictionary[user2]['is_source_user'] = False
         
         # We use a dictionary to make it easier to index via id
-        
     
         # Read in source tweet(s) 
         path_to_source_tweet = os.path.join(path_to_thread, 'source-tweets', filename + '.json')
@@ -85,7 +132,6 @@ for event_name in event_names:
             source_tweet = json.load(f)
             new_created_at = datetime.strftime(datetime.strptime(source_tweet.get('created_at'), '%a %b %d %H:%M:%S +0000 %Y'), '%Y-%m-%d %H:%M:%S')
             source_tweet['created_at'] = new_created_at
-            
         
         # Read in reactions
         reactions = []
@@ -103,6 +149,11 @@ for event_name in event_names:
                 
                 reactions.append(reaction)
 
+        # Read in annotation
+        annotation = None
+        path_to_annotation = os.path.join(path_to_thread, 'annotation.json')
+        with open(path_to_annotation, 'r') as f:
+            annotation = json.load(f)
                 
         
         # Combine these in dictionary and add to list of dictionaries for each thread
@@ -111,6 +162,7 @@ for event_name in event_names:
             'source_tweet': source_tweet,
             'no_of_reactions': len(reactions),
             'reactions': reactions,
+            'annotation': annotation,
             }
         thread_dictionaries.append(thread_dictionary)
 
@@ -148,43 +200,24 @@ for event_name in event_names:
         reactions = t.get("reactions")
         for r in reactions:
             all_reactions.append(r)
+    plot_reactions(all_reactions, event_name)
 
-    all_reactions = sorted(all_reactions, key=lambda d: d['created_at'], reverse=False)
-    start_time = all_reactions[0].get("created_at")
-    start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
-    end_time = all_reactions[-1].get("created_at")
-    end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
-    elapsed = end_time - start_time
-    min_interval = 5
-    number_of_intervals = ceil(elapsed / timedelta(minutes=min_interval))
-    x_axis = [start_time + timedelta(minutes=x * min_interval) for x in range(number_of_intervals+1)]
+    # TODO: Rumour vs non-rumour communities for this event
+    rumour_reactions = []
+    nonrumour_reactions = []
+    for t in thread_dictionaries:
+        reactions = t.get("reactions")    
+        if t.get("annotation").get("misinformation") == "1":
+            for r in reactions:
+                rumour_reactions.append(r)
+        else:
+            for r in reactions:
+                nonrumour_reactions.append(r)
+    plot_reactions(nonrumour_reactions, event_name, rumour="-nonrumour")
+    plot_reactions(rumour_reactions, event_name, rumour="-rumour")
 
-    # Formulating y-axis
-    y_axis = []
-
-    curr_reaction_idx = 0
-    count = 0
-    for timestamp in x_axis:
-        # check for out of bounds
-        if curr_reaction_idx >= len(all_reactions):
-            break
-        while (datetime.strptime(all_reactions[curr_reaction_idx].get('created_at'), '%Y-%m-%d %H:%M:%S') <= timestamp):
-            count += 1
-            curr_reaction_idx += 1
-            if curr_reaction_idx >= len(all_reactions):
-                break
-        y_axis.append(count)
-
-    # Plot the axis
-    plt.title(event_name)
-    plt.xlabel("Timestamps")
-    plt.ylabel("No. of reactions")
-    # https://www.youtube.com/watch?v=_LWjaAiKaf8
-    plt.plot_date(x_axis, y_axis, linestyle='solid', markersize=2, color='red' )
-    plt.gcf().autofmt_xdate()
-    plt.tight_layout()
-    plt.savefig(event_name)
-    plt.close()
-    print(event_name + " saved.")
+    # TODO: Make use of these two sorted thread dictionaries for this event
+    thread_dictionaries_by_following
+    thread_dictionaries_by_reactions
 
     
