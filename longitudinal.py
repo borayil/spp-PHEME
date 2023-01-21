@@ -8,7 +8,7 @@ import json
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from matplotlib import dates
-from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_non_accumulative
+from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_daily
 
 # Plot
 # Non-accumulative
@@ -17,7 +17,7 @@ from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions
 #  Read thread by thread
 event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
                'prince-toronto', 'putinmissing', 'sydneysiege']
-event_names = ['charliehebdo']
+event_names = ['charliehebdo', 'ferguson']
 
 for event_name in event_names:
     # Go to initial dir
@@ -129,6 +129,7 @@ for event_name in event_names:
             'no_of_reactions': len(reactions),
             'reactions': reactions,
             'annotation': annotation,
+            'user_follow_dictionary': user_follow_dictionary,
         }
         thread_dictionaries.append(thread_dictionary)
 
@@ -167,7 +168,8 @@ for event_name in event_names:
         reactions = t.get("reactions")
         for r in reactions:
             all_reactions.append(r)
-    plot_reactions(all_reactions, event_name)
+
+    # plot_reactions(all_reactions, event_name)
 
     # TODO: Rumour vs non-rumour communities for this event
     rumour_reactions = []
@@ -180,42 +182,54 @@ for event_name in event_names:
         else:
             for r in reactions:
                 nonrumour_reactions.append(r)
-    """
+
     plot_reactions_accumulative(
         nonrumour_reactions, event_name, rumour="-nonrumour-accumulative")
     plot_reactions_accumulative(
         rumour_reactions, event_name, rumour="-rumour-accumulative")
 
-    plot_reactions(nonrumour_reactions, event_name, rumour="-nonrumour")
-    plot_reactions(rumour_reactions, event_name, rumour="-rumour")
+    # plot_reactions(nonrumour_reactions, event_name, rumour="-nonrumour")
+    # plot_reactions(rumour_reactions, event_name, rumour="-rumour")
 
-    plot_reactions_daily(nonrumour_reactions, event_name, rumour="-nonrumour")
-    plot_reactions_daily(rumour_reactions, event_name, rumour="-rumour")
-    """
+    plot_reactions_daily(nonrumour_reactions, event_name,
+                         rumour="-nonrumour-daily")
+    plot_reactions_daily(rumour_reactions, event_name,
+                         rumour="-rumour-daily")
 
-    # Do the reaction plotting thread by thread source tweet: checking how a source tweets timestamp effects amount of reactions
-    #  compare by visualisation and number
-    #  When was the peak for the tweet: an hour later? or 10 minutes
-
+    #  Add source tweet amongst reactions, so first reaction is source tweet
     #  Get first 5 threads from thread_dictionaries_by_reactions by index
     thread_dictionaries_by_reactions = thread_dictionaries_by_reactions[:5]
     no = 1
+    print('=== BY REACTIONS ===')
     for t in thread_dictionaries_by_reactions:
+        # Note source time in report
+
         # For each thread t, get the reactions
         reactions = t.get("reactions")
-        # reactions.append(t.get("source_tweet"))
+        reactions.append(t.get("source_tweet"))
         plot_reactions(reactions, event_name,
-                       rumour="top-reactions-no-"+str(no))
+                       rumour="-thread-" + t.get("thread_id") + "-top-reactions-no-"+str(no))
         no += 1
 
     #  Get first 5 threads from thread_dictionaries_by_following by index
     top5_thread_dictionaries_by_following = thread_dictionaries_by_following[:5]
     no = 1
+    print('=== BY FOLLOWERS REACTIONS ===')
     for t in top5_thread_dictionaries_by_following:
+        # Note source time in report
         # For each thread t, get the reactions
         reactions = t.get("reactions")
-
-        # reactions.append(t.get("source_tweet"))
+        reactions.append(t.get("source_tweet"))
         plot_reactions(reactions, event_name,
-                       rumour="top-following-no-"+str(no))
+                       rumour="-thread-" + t.get("thread_id") + "-top-following-no-"+str(no))
         no += 1
+
+    # 1. Explain sorting of threads (the top5s) in report AND code
+    # 2. Label rumour vs nonrumour on reactions
+    # (and plot on top of each other for all plots, like
+    # add a paramater to plot_reactions functions true or false, which will denote rumour or not)
+    # 3. MAYBE Seperate reactions plot function (scatter plot over time)
+    # 4. For nodes with most followers thread, make their NetworkX Ego graph (centrality and degrees)
+    # 5. zoom in plot for report
+    # 6. When last activity occurs in event
+    # 7. Use the other events, and compare / look for patterns

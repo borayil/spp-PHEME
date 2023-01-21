@@ -69,7 +69,7 @@ def plot_reactions(reactions, event_name, rumour=""):
     end_time = reactions[-1].get("created_at")
     end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
     elapsed = end_time - start_time
-    min_interval = 10
+    min_interval = 5
     number_of_intervals = ceil(elapsed / timedelta(minutes=min_interval))
     x_axis = [start_time + timedelta(minutes=x * min_interval)
               for x in range(number_of_intervals+1)]
@@ -103,11 +103,19 @@ def plot_reactions(reactions, event_name, rumour=""):
     plt.close()
     print(file_name + "saved.")
 
+    # Print out source tweet time
+    first_time = x_axis[0]
+    print("Source time: " + str(first_time))
+
     # Print out the peak time and peak value
     peak_time = x_axis[y_axis.index(max(y_axis))]
     peak_value = max(y_axis)
     print("Peak time: " + str(peak_time))
     print("Peak value: " + str(peak_value))
+
+    # Print out time difference between first_time and peak_time
+    time_diff = peak_time - first_time
+    print("Time from source to peak: " + str(time_diff))
 
 
 #  Plots given reactions with timestamps on given filename
