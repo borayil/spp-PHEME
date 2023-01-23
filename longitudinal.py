@@ -312,7 +312,3 @@ for event_name in event_names:
 
     # 6. When last activity occurs in event
     # 7. Use the other events, and compare / look for patterns
-
-
-# nx.draw_networkx(g, pos=sp, with_labels=False, node_size=35, arrows=True)
-
