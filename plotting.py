@@ -4,6 +4,7 @@ from matplotlib import dates
 from math import ceil
 
 
+
 def plot_reactions_accumulative(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
         return
@@ -56,7 +57,7 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
     print("Peak value: " + str(peak_value))
 
 
-def plot_reactions(reactions, event_name, rumour=""):
+def plot_reactions(reactions, event_name, is_rumour_thread, rumour=""):
 
     if len(reactions) <= 0:
         return
@@ -96,7 +97,8 @@ def plot_reactions(reactions, event_name, rumour=""):
     plt.title(file_name)
     plt.xlabel("Timestamps")
     plt.ylabel("No. of reactions")
-    plt.plot_date(x_axis, y_axis, linestyle='solid', markersize=2, color='red')
+    color = 'red' if is_rumour_thread else 'blue'
+    plt.plot_date(x_axis, y_axis, linestyle='solid', markersize=2, color=color)
     plt.gcf().autofmt_xdate()
     plt.tight_layout()
     plt.savefig(file_name)
@@ -195,3 +197,5 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
         peak_value = max(y_axis)
         print("Peak time: " + str(peak_time))
         print("Peak value: " + str(peak_value))
+
+

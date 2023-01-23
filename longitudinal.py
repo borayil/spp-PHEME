@@ -4,20 +4,20 @@
 from math import ceil
 import os
 import pandas as pd
+import networkx as nx
 import json
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from matplotlib import dates
 from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_daily
 
+
 # Plot
 # Non-accumulative
-
-
 #  Read thread by thread
 event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
                'prince-toronto', 'putinmissing', 'sydneysiege']
-event_names = ['charliehebdo', 'ferguson']
+event_names = ['charliehebdo']
 
 for event_name in event_names:
     # Go to initial dir
@@ -171,7 +171,7 @@ for event_name in event_names:
 
     # plot_reactions(all_reactions, event_name)
 
-    # TODO: Rumour vs non-rumour communities for this event
+    # Seperately plot rumour and nonrumour reactions
     rumour_reactions = []
     nonrumour_reactions = []
     for t in thread_dictionaries:
@@ -198,16 +198,17 @@ for event_name in event_names:
 
     #  Add source tweet amongst reactions, so first reaction is source tweet
     #  Get first 5 threads from thread_dictionaries_by_reactions by index
-    thread_dictionaries_by_reactions = thread_dictionaries_by_reactions[:5]
+    top5_thread_dictionaries_by_reactions = thread_dictionaries_by_reactions[:5]
     no = 1
     print('=== BY REACTIONS ===')
-    for t in thread_dictionaries_by_reactions:
+    for t in top5_thread_dictionaries_by_reactions:
         # Note source time in report
 
         # For each thread t, get the reactions
         reactions = t.get("reactions")
         reactions.append(t.get("source_tweet"))
-        plot_reactions(reactions, event_name,
+        is_rumour_thread = t.get("annotation").get("misinformation") == "1"
+        plot_reactions(reactions, event_name, is_rumour_thread,
                        rumour="-thread-" + t.get("thread_id") + "-top-reactions-no-"+str(no))
         no += 1
 
@@ -220,16 +221,98 @@ for event_name in event_names:
         # For each thread t, get the reactions
         reactions = t.get("reactions")
         reactions.append(t.get("source_tweet"))
-        plot_reactions(reactions, event_name,
+        is_rumour_thread = t.get("annotation").get("misinformation") == "1"
+        plot_reactions(reactions, event_name, is_rumour_thread,
                        rumour="-thread-" + t.get("thread_id") + "-top-following-no-"+str(no))
         no += 1
 
-    # 1. Explain sorting of threads (the top5s) in report AND code
-    # 2. Label rumour vs nonrumour on reactions
-    # (and plot on top of each other for all plots, like
-    # add a paramater to plot_reactions functions true or false, which will denote rumour or not)
-    # 3. MAYBE Seperate reactions plot function (scatter plot over time)
-    # 4. For nodes with most followers thread, make their NetworkX Ego graph (centrality and degrees)
-    # 5. zoom in plot for report
+
+    k_value = 0.21
+    # Ego Graphs section 
+    for t in top5_thread_dictionaries_by_following:
+        # Draw NetworkX Ego graph for each thread
+
+        # Start by reading who-follows-whom.dat with built in read_edgelist function
+        thread_id = t.get("thread_id")
+        path_to_who_follows_whom = os.path.join('.','PhemeDataset', 'threads', 
+        'en',event_name,thread_id,'who-follows-whom.dat')
+        if (not os.path.isfile(path_to_who_follows_whom)):
+            continue
+        g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
+        print(nx.info(g))
+        plt.axis('off')
+
+        # Draw ego graph where source is the center and node size is proportional to centrality
+        source_id = t.get("source_tweet").get("user").get("id")
+        source_id = source_id
+
+        # Get centrality for sizing
+        centrality = nx.degree_centrality(g)
+        centrality = [5 + (v * 1000) for v in centrality.values()]
+
+        # Create color map
+        color_map = []
+        for node in g:
+            if node == source_id:
+                color_map.append('green')
+            else: 
+                color_map.append('#1f78b4')
+
+        
+        # Set layout
+        sp = nx.spring_layout(g, k=k_value, scale=2)
+                
+        nx.draw_networkx(g, pos=sp, with_labels=False, 
+        node_color=color_map,
+        node_size=centrality, arrows=True, width=0.35, edgecolors='black')
+        #nx.draw_networkx_nodes(g, pos=sp, nodelist=[source_id], node_color='g')
+        plt.savefig('following-ego-graph-' + thread_id + '.png')
+        plt.show()
+    
+    # Ego Graphs
+    for t in top5_thread_dictionaries_by_reactions:
+        # Draw NetworkX Ego graph for each thread
+
+        # Start by reading who-follows-whom.dat with built in read_edgelist function
+        thread_id = t.get("thread_id")
+        path_to_who_follows_whom = os.path.join('.','PhemeDataset', 'threads', 
+        'en',event_name,thread_id,'who-follows-whom.dat')
+        if (not os.path.isfile(path_to_who_follows_whom)):
+            continue
+        g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
+        print(nx.info(g))
+        plt.axis('off')
+
+        # Draw ego graph where source is the center and node size is proportional to centrality
+        source_id = t.get("source_tweet").get("user").get("id")
+        source_id = source_id
+
+        # Get centrality for sizing
+        centrality = nx.degree_centrality(g)
+        centrality = [5 + (v * 1000) for v in centrality.values()]
+
+        # Create color map
+        color_map = []
+        for node in g:
+            if node == source_id:
+                color_map.append('green')
+            else: 
+                color_map.append('#1f78b4')
+
+        # Set layout
+        sp = nx.spring_layout(g, k=k_value, scale=2)
+                
+        nx.draw_networkx(g, pos=sp, with_labels=False, 
+        node_color=color_map,
+        node_size=centrality, arrows=True, width=0.35, edgecolors='black')
+        #nx.draw_networkx_nodes(g, pos=sp, nodelist=[source_id], node_color='g')
+        plt.savefig('reactions-ego-graph-' + thread_id + '.png')
+        plt.show()
+
+
     # 6. When last activity occurs in event
     # 7. Use the other events, and compare / look for patterns
+
+
+# nx.draw_networkx(g, pos=sp, with_labels=False, node_size=35, arrows=True)
+
