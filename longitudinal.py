@@ -279,16 +279,19 @@ for event_name in event_names:
         sp = nx.spring_layout(g, k=k_value, scale=2, iterations=no_iterations)
 
                 
-        nx.draw_networkx(g, pos=sp, with_labels=False, 
+        nx.draw_networkx_nodes(g, pos=sp,
         node_color=color_map,
-        node_size=centrality, arrows=True, width=0.2, edgecolors='black')
+        node_size=centrality)
+
+        nx.draw_networkx_edges(g, pos=sp, 
+        arrows=True, width=0.2, edge_color='gray', alpha=0.6)
         save_name = 'following-ego-graph-' + thread_id + '.png'
         plt.savefig(save_name)
         print(save_name + " saved")
         #plt.show()
         plt.close()
     
-    # Ego Graphs
+    # Ego Graphs section 
     for t in top5_thread_dictionaries_by_reactions:
         # Draw NetworkX Ego graph for each thread
 
@@ -296,7 +299,7 @@ for event_name in event_names:
         thread_id = t.get("thread_id")
         path_to_who_follows_whom = os.path.join('..', '..','PhemeDataset', 'threads', 
         'en',event_name,thread_id,'who-follows-whom.dat')
-    
+        
         if (not os.path.isfile(path_to_who_follows_whom)):
             continue
         g = None
@@ -320,13 +323,17 @@ for event_name in event_names:
             else: 
                 color_map.append('#1f78b4')
 
+        
         # Set layout
         sp = nx.spring_layout(g, k=k_value, scale=2, iterations=no_iterations)
+
                 
-        nx.draw_networkx(g, pos=sp, with_labels=False, 
+        nx.draw_networkx_nodes(g, pos=sp,
         node_color=color_map,
-        node_size=centrality, arrows=True, width=0.35, edgecolors='black')
-        #nx.draw_networkx_nodes(g, pos=sp, nodelist=[source_id], node_color='g')
+        node_size=centrality)
+
+        nx.draw_networkx_edges(g, pos=sp, 
+        arrows=True, width=0.2, edge_color='gray', alpha=0.6)
         save_name = 'reactions-ego-graph-' + thread_id + '.png'
         plt.savefig(save_name)
         print(save_name + " saved")
