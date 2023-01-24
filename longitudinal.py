@@ -20,6 +20,20 @@ event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 
 event_names = ['charliehebdo']
 
 for event_name in event_names:
+    # Create output directory if it doesn't exist
+    path_to_output = os.path.join('.', 'output')
+    if (not os.path.isdir(path_to_output)):
+        os.mkdir(path_to_output)
+        
+
+    # Create a new directory for the this events output if it doesn't exist
+    path_to_output = os.path.join('.', 'output', event_name)
+    if (not os.path.isdir(path_to_output)):
+        os.mkdir(path_to_output)
+    
+    # Change into the output directory
+    os.chdir(path_to_output)
+
     # Go to initial dir
     follow_tuples = []
     user_follow_dictionary = {}
@@ -27,7 +41,7 @@ for event_name in event_names:
     source_user_ids = []
     thread_dictionaries = []
     path_to_event = os.path.join(
-        '.', 'PhemeDataset', 'threads', 'en', event_name)
+        '..', '..', 'PhemeDataset', 'threads', 'en', event_name)
 
     # Store all source user ids
     for filename in os.listdir(path_to_event):
@@ -227,19 +241,22 @@ for event_name in event_names:
         no += 1
 
 
-    k_value = 0.21
+    k_value = 0.2
+    no_iterations = 125
     # Ego Graphs section 
     for t in top5_thread_dictionaries_by_following:
         # Draw NetworkX Ego graph for each thread
 
         # Start by reading who-follows-whom.dat with built in read_edgelist function
         thread_id = t.get("thread_id")
-        path_to_who_follows_whom = os.path.join('.','PhemeDataset', 'threads', 
+        path_to_who_follows_whom = os.path.join('..', '..','PhemeDataset', 'threads', 
         'en',event_name,thread_id,'who-follows-whom.dat')
+        print(path_to_who_follows_whom)
         if (not os.path.isfile(path_to_who_follows_whom)):
             continue
+        g = None
         g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
-        print(nx.info(g))
+        
         plt.axis('off')
 
         # Draw ego graph where source is the center and node size is proportional to centrality
@@ -248,7 +265,7 @@ for event_name in event_names:
 
         # Get centrality for sizing
         centrality = nx.degree_centrality(g)
-        centrality = [5 + (v * 1000) for v in centrality.values()]
+        centrality = [1 + (v * 900) for v in centrality.values()]
 
         # Create color map
         color_map = []
@@ -260,14 +277,17 @@ for event_name in event_names:
 
         
         # Set layout
-        sp = nx.spring_layout(g, k=k_value, scale=2)
+        sp = nx.spring_layout(g, k=k_value, scale=2, iterations=no_iterations)
+
                 
         nx.draw_networkx(g, pos=sp, with_labels=False, 
         node_color=color_map,
-        node_size=centrality, arrows=True, width=0.35, edgecolors='black')
-        #nx.draw_networkx_nodes(g, pos=sp, nodelist=[source_id], node_color='g')
-        plt.savefig('following-ego-graph-' + thread_id + '.png')
-        plt.show()
+        node_size=centrality, arrows=True, width=0.2, edgecolors='black')
+        save_name = 'following-ego-graph-' + thread_id + '.png'
+        plt.savefig(save_name)
+        print(save_name + " saved")
+        #plt.show()
+        plt.close()
     
     # Ego Graphs
     for t in top5_thread_dictionaries_by_reactions:
@@ -275,12 +295,14 @@ for event_name in event_names:
 
         # Start by reading who-follows-whom.dat with built in read_edgelist function
         thread_id = t.get("thread_id")
-        path_to_who_follows_whom = os.path.join('.','PhemeDataset', 'threads', 
+        path_to_who_follows_whom = os.path.join('..', '..','PhemeDataset', 'threads', 
         'en',event_name,thread_id,'who-follows-whom.dat')
+        print(path_to_who_follows_whom)
         if (not os.path.isfile(path_to_who_follows_whom)):
             continue
+        g = None
         g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
-        print(nx.info(g))
+        
         plt.axis('off')
 
         # Draw ego graph where source is the center and node size is proportional to centrality
@@ -289,7 +311,7 @@ for event_name in event_names:
 
         # Get centrality for sizing
         centrality = nx.degree_centrality(g)
-        centrality = [5 + (v * 1000) for v in centrality.values()]
+        centrality = [1 + (v * 900) for v in centrality.values()]
 
         # Create color map
         color_map = []
@@ -300,15 +322,21 @@ for event_name in event_names:
                 color_map.append('#1f78b4')
 
         # Set layout
-        sp = nx.spring_layout(g, k=k_value, scale=2)
+        sp = nx.spring_layout(g, k=k_value, scale=2, iterations=no_iterations)
                 
         nx.draw_networkx(g, pos=sp, with_labels=False, 
         node_color=color_map,
         node_size=centrality, arrows=True, width=0.35, edgecolors='black')
         #nx.draw_networkx_nodes(g, pos=sp, nodelist=[source_id], node_color='g')
-        plt.savefig('reactions-ego-graph-' + thread_id + '.png')
-        plt.show()
-
+        save_name = 'reactions-ego-graph-' + thread_id + '.png'
+        plt.savefig(save_name)
+        print(save_name + " saved")
+        #plt.show()
+        plt.close()
+    
+    # Change back 2 directories
+    os.chdir("..")
+    os.chdir("..")
 
     # 6. When last activity occurs in event
     # 7. Use the other events, and compare / look for patterns
