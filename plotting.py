@@ -56,6 +56,13 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
     print("Peak time: " + str(peak_time))
     print("Peak value: " + str(peak_value))
 
+    # Print out last activity time where value is higher than 0
+    last_activity_time = x_axis[y_axis.index(1)]
+    print("Last activity time: " + str(last_activity_time))
+
+    # Print art denoting end
+    print("====================================")
+
 
 def plot_reactions(reactions, event_name, is_rumour_thread, rumour=""):
 
@@ -119,16 +126,19 @@ def plot_reactions(reactions, event_name, is_rumour_thread, rumour=""):
     time_diff = peak_time - first_time
     print("Time from source to peak: " + str(time_diff))
 
+    # Print out last activity time where value is higher than 0
+    last_activity_time = x_axis[y_axis.index(1)]
+    print("Last activity time: " + str(last_activity_time))
 
-#  Plots given reactions with timestamps on given filename
-#  Accumulative
+    # Print art denoting end
+    print("====================================")
 
 
 def plot_reactions_daily(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
         return
     assert (not event_name is None)
-
+    file_name = event_name + rumour
     # Plot
     reactions = sorted(reactions, key=lambda d: d['created_at'], reverse=False)
     start_time = reactions[0].get("created_at")
@@ -175,7 +185,6 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
             y_axis.append(0)
 
         # Plot
-        file_name = event_name + rumour
         plt.title(file_name)
         plt.xlabel("Timestamps")
         plt.ylabel("No. of reactions")
@@ -185,17 +194,7 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
         plt.tight_layout()
         plt.savefig(file_name + curr_day.strftime("%m-%d-%Y"))
         plt.close()
-        print(file_name + "saved.")
-
-        # Go to next day
-        print(curr_day)
         curr_day += timedelta(days=1)
-        print(curr_day)
-        print("---")
-        # Print out the peak time and peak value
-        peak_time = x_axis[y_axis.index(max(y_axis))]
-        peak_value = max(y_axis)
-        print("Peak time: " + str(peak_time))
-        print("Peak value: " + str(peak_value))
+    print(file_name + "saved.")
 
 

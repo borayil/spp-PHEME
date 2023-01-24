@@ -3,7 +3,6 @@
 
 from math import ceil
 import os
-import pandas as pd
 import networkx as nx
 import json
 from datetime import datetime, timedelta
@@ -241,8 +240,8 @@ for event_name in event_names:
         no += 1
 
 
-    k_value = 0.15
-    no_iterations = 75
+    k_value = 0.5
+    no_iterations = 200
     # Ego Graphs section 
     for t in top5_thread_dictionaries_by_following:
         # Draw NetworkX Ego graph for each thread
@@ -251,7 +250,7 @@ for event_name in event_names:
         thread_id = t.get("thread_id")
         path_to_who_follows_whom = os.path.join('..', '..','PhemeDataset', 'threads', 
         'en',event_name,thread_id,'who-follows-whom.dat')
-        print(path_to_who_follows_whom)
+        
         if (not os.path.isfile(path_to_who_follows_whom)):
             continue
         g = None
@@ -297,7 +296,7 @@ for event_name in event_names:
         thread_id = t.get("thread_id")
         path_to_who_follows_whom = os.path.join('..', '..','PhemeDataset', 'threads', 
         'en',event_name,thread_id,'who-follows-whom.dat')
-        print(path_to_who_follows_whom)
+    
         if (not os.path.isfile(path_to_who_follows_whom)):
             continue
         g = None
