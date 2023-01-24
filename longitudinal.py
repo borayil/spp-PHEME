@@ -241,8 +241,8 @@ for event_name in event_names:
         no += 1
 
 
-    k_value = 0.2
-    no_iterations = 125
+    k_value = 0.15
+    no_iterations = 75
     # Ego Graphs section 
     for t in top5_thread_dictionaries_by_following:
         # Draw NetworkX Ego graph for each thread
