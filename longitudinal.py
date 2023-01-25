@@ -15,7 +15,7 @@ from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions
 #  Read thread by thread
 event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
                'prince-toronto', 'putinmissing', 'sydneysiege']
-event_names = ['charliehebdo']
+event_names = ['charliehebdo', 'ferguson', 'sydneysiege']
 
 for event_name in event_names:
     print('Processing event: ' + event_name)

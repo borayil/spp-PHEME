@@ -4,6 +4,7 @@ from matplotlib import dates
 from math import ceil
 import os
 import networkx as nx
+from math import sqrt
 
 def plot_reactions_accumulative(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
@@ -248,7 +249,9 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
         # Go back one directory
         os.chdir("..")
 
-def plot_ego_graph(thread, event_name, k=0.5, scale=2, iterations=150):
+def plot_ego_graph(thread, event_name, k=0.62, scale=1, iterations=100):
+
+
         # Draw NetworkX Ego graph for each thread
 
         # Start by reading who-follows-whom.dat with built in read_edgelist function
@@ -263,13 +266,18 @@ def plot_ego_graph(thread, event_name, k=0.5, scale=2, iterations=150):
         
         plt.axis('off')
 
+        # Make networkx graph bigger
+        #plt.figure(figsize=(12,12))
+
+
+
         # Draw ego graph where source is the center and node size is proportional to centrality
         source_id = thread.get("source_tweet").get("user").get("id")
         source_id = source_id
 
         # Get centrality for sizing
         centrality = nx.degree_centrality(g)
-        centrality = [1 + (v * 900) for v in centrality.values()]
+        centrality = [min(1 + (v * 500), 3000) for v in centrality.values()]
 
         # Create color map
         color_map = []
@@ -278,19 +286,17 @@ def plot_ego_graph(thread, event_name, k=0.5, scale=2, iterations=150):
                 color_map.append('green')
             else: 
                 color_map.append('#1f78b4')
-
         
         # Set layout
-        sp = nx.spring_layout(g, k=0.5, scale=2, iterations=250)
-
-                
+        sp = nx.spring_layout(g, k=k, scale=scale, iterations=iterations)
+       
         nx.draw_networkx_nodes(g, pos=sp,
         node_color=color_map,
         node_size=centrality,
         edgecolors = 'black')
 
-        nx.draw_networkx_edges(g, pos=sp, 
-        arrows=True, width=0.2, edge_color='brown', alpha=0.75)
+        nx.draw_networkx_edges(g, pos=sp, node_size=centrality,
+        arrows=False, width=0.3, edge_color='brown', alpha=0.8)
         save_name = 'ego-graph-' + thread_id + '.png'
 
         # Set title of plot to thread_id and number of nodes and edges
