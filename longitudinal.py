@@ -197,17 +197,17 @@ for event_name in event_names:
                 nonrumour_reactions.append(r)
 
     plot_reactions_accumulative(
-        nonrumour_reactions, event_name, rumour="-nonrumour-accumulative")
+        nonrumour_reactions, event_name, rumour="nonrumour-accumulative")
     plot_reactions_accumulative(
-        rumour_reactions, event_name, rumour="-rumour-accumulative")
+        rumour_reactions, event_name, rumour="rumour-accumulative")
 
     # plot_reactions(nonrumour_reactions, event_name, rumour="-nonrumour")
     # plot_reactions(rumour_reactions, event_name, rumour="-rumour")
 
     plot_reactions_daily(nonrumour_reactions, event_name,
-                         rumour="-nonrumour-daily")
+                         rumour="nonrumour-daily")
     plot_reactions_daily(rumour_reactions, event_name,
-                         rumour="-rumour-daily")
+                         rumour="rumour-daily")
 
     #  Add source tweet amongst reactions, so first reaction is source tweet
     #  Get first 5 threads from thread_dictionaries_by_reactions by index
@@ -222,7 +222,7 @@ for event_name in event_names:
         reactions.append(t.get("source_tweet"))
         is_rumour_thread = t.get("annotation").get("misinformation") == "1"
         plot_reactions(reactions, event_name, is_rumour_thread,
-                       rumour="-thread-" + t.get("thread_id") + "-top-reactions-no-"+str(no))
+                       rumour="top-reactions-no-"+str(no)+"-"+t.get("thread_id"))
         no += 1
 
     #  Get first 5 threads from thread_dictionaries_by_following by index
@@ -236,12 +236,12 @@ for event_name in event_names:
         reactions.append(t.get("source_tweet"))
         is_rumour_thread = t.get("annotation").get("misinformation") == "1"
         plot_reactions(reactions, event_name, is_rumour_thread,
-                       rumour="-thread-" + t.get("thread_id") + "-top-following-no-"+str(no))
+                       rumour="top-following-no-"+str(no)+"-"+t.get("thread_id"))
         no += 1
 
 
     k_value = 0.5
-    no_iterations = 200
+    no_iterations = 250
     # Ego Graphs section 
     for t in top5_thread_dictionaries_by_following:
         # Draw NetworkX Ego graph for each thread
@@ -281,10 +281,11 @@ for event_name in event_names:
                 
         nx.draw_networkx_nodes(g, pos=sp,
         node_color=color_map,
-        node_size=centrality)
+        node_size=centrality,
+        edgecolors = 'black')
 
         nx.draw_networkx_edges(g, pos=sp, 
-        arrows=True, width=0.2, edge_color='gray', alpha=0.6)
+        arrows=True, width=0.2, edge_color='gray', alpha=0.75)
         save_name = 'following-ego-graph-' + thread_id + '.png'
         plt.savefig(save_name)
         print(save_name + " saved")
@@ -330,10 +331,11 @@ for event_name in event_names:
                 
         nx.draw_networkx_nodes(g, pos=sp,
         node_color=color_map,
-        node_size=centrality)
+        node_size=centrality,
+        edgecolors = 'black')
 
         nx.draw_networkx_edges(g, pos=sp, 
-        arrows=True, width=0.2, edge_color='gray', alpha=0.6)
+        arrows=True, width=0.2, edge_color='gray', alpha=0.75)
         save_name = 'reactions-ego-graph-' + thread_id + '.png'
         plt.savefig(save_name)
         print(save_name + " saved")

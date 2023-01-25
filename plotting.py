@@ -39,7 +39,7 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
         y_axis.append(count)
 
     # Plot the axis
-    file_name = event_name + rumour
+    file_name = rumour
     plt.title(file_name)
     plt.xlabel("Timestamps")
     plt.ylabel("(Accumulative) No. of reactions")
@@ -100,7 +100,7 @@ def plot_reactions(reactions, event_name, is_rumour_thread, rumour=""):
         y_axis.append(count)
 
     # Plot the axis
-    file_name = event_name + rumour
+    file_name = rumour
     plt.title(file_name)
     plt.xlabel("Timestamps")
     plt.ylabel("No. of reactions")
@@ -138,7 +138,7 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
         return
     assert (not event_name is None)
-    file_name = event_name + rumour
+    file_name = rumour
     # Plot
     reactions = sorted(reactions, key=lambda d: d['created_at'], reverse=False)
     start_time = reactions[0].get("created_at")
