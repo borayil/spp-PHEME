@@ -2,12 +2,15 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from matplotlib import dates
 from math import ceil
-
+import os
+import networkx as nx
 
 def plot_reactions_accumulative(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
         return
     assert (not event_name is None)
+
+    
 
     # Plot rumour
     reactions = sorted(reactions, key=lambda d: d['created_at'], reverse=False)
@@ -37,8 +40,18 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
                 break
         y_axis.append(count)
 
-    # Plot the axis
+    # Outputting the files
     file_name = rumour
+
+    # Make output directory
+    path_to_output = os.path.join(".", file_name)
+
+    # Create output directory if it does not exist
+    if (not os.path.isdir(path_to_output)):
+        os.mkdir(path_to_output)
+    os.chdir(path_to_output)
+
+    # Save the plot
     plt.title(file_name)
     plt.xlabel("Timestamps")
     plt.ylabel("(Accumulative) No. of reactions")
@@ -49,21 +62,31 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
     plt.close()
     print(file_name + "saved.")
 
-    # Print out the peak time and peak value
-    peak_time = x_axis[y_axis.index(max(y_axis))]
-    peak_value = max(y_axis)
-    print("Peak time: " + str(peak_time))
-    print("Peak value: " + str(peak_value))
+    # Create a text file with the same name as the plot
+    with open(file_name + ".txt", "w") as f:
+        first_time = x_axis[0]
+        peak_time = x_axis[y_axis.index(max(y_axis))]
+        peak_value = max(y_axis)
+        time_diff = peak_time - first_time
+        last_activity_time = x_axis[y_axis.index(1)]
+        f.write("Peak time: " + str(peak_time) + "\n")
+        f.write("Peak value: " + str(peak_value) + "\n")
+        f.write("Last activity time: " + str(last_activity_time) + "\n")
+        f.write("Time from source to peak: " + str(time_diff) + "\n")
+        print("Source time: " + str(first_time))
+        print("Peak time: " + str(peak_time))
+        print("Peak value: " + str(peak_value))
+        print("Last activity time: " + str(last_activity_time))
+        print("Time from source to peak: " + str(time_diff))
 
-    # Print out last activity time where value is higher than 0
-    last_activity_time = x_axis[y_axis.index(1)]
-    print("Last activity time: " + str(last_activity_time))
-
+    # Go back one directory
+    os.chdir("..")
+    
     # Print art denoting end
     print("====================================")
 
 
-def plot_reactions(reactions, event_name, is_rumour_thread, rumour=""):
+def plot_reactions(reactions, event_name, rumour=""):
 
     if len(reactions) <= 0:
         return
@@ -98,36 +121,48 @@ def plot_reactions(reactions, event_name, is_rumour_thread, rumour=""):
                 break
         y_axis.append(count)
 
-    # Plot the axis
+    # Outputting the files
     file_name = rumour
+
+    # Make output directory
+    path_to_output = os.path.join(".", file_name)
+
+    # Create output directory if it does not exist
+    if (not os.path.isdir(path_to_output)):
+        os.mkdir(path_to_output)
+    os.chdir(path_to_output)
+
+    # Save the plot
     plt.title(file_name)
     plt.xlabel("Timestamps")
     plt.ylabel("No. of reactions")
-    color = 'red' if is_rumour_thread else 'blue'
-    plt.plot_date(x_axis, y_axis, linestyle='solid', markersize=2, color=color)
+    plt.plot_date(x_axis, y_axis, linestyle='solid', markersize=2, color='red')
     plt.gcf().autofmt_xdate()
     plt.tight_layout()
     plt.savefig(file_name)
     plt.close()
     print(file_name + "saved.")
 
-    # Print out source tweet time
-    first_time = x_axis[0]
-    print("Source time: " + str(first_time))
+    # Create a text file with the same name as the plot
+    with open(file_name + ".txt", "w") as f:
+        first_time = x_axis[0]
+        peak_time = x_axis[y_axis.index(max(y_axis))]
+        peak_value = max(y_axis)
+        time_diff = peak_time - first_time
+        last_activity_time = x_axis[y_axis.index(1)]
+        f.write("Peak time: " + str(peak_time) + "\n")
+        f.write("Peak value: " + str(peak_value) + "\n")
+        f.write("Last activity time: " + str(last_activity_time) + "\n")
+        f.write("Time from source to peak: " + str(time_diff) + "\n")
+        print("Source time: " + str(first_time))
+        print("Peak time: " + str(peak_time))
+        print("Peak value: " + str(peak_value))
+        print("Last activity time: " + str(last_activity_time))
+        print("Time from source to peak: " + str(time_diff))
 
-    # Print out the peak time and peak value
-    peak_time = x_axis[y_axis.index(max(y_axis))]
-    peak_value = max(y_axis)
-    print("Peak time: " + str(peak_time))
-    print("Peak value: " + str(peak_value))
 
-    # Print out time difference between first_time and peak_time
-    time_diff = peak_time - first_time
-    print("Time from source to peak: " + str(time_diff))
-
-    # Print out last activity time where value is higher than 0
-    last_activity_time = x_axis[y_axis.index(1)]
-    print("Last activity time: " + str(last_activity_time))
+    # Go back one directory
+    os.chdir("..")
 
     # Print art denoting end
     print("====================================")
@@ -137,7 +172,7 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
         return
     assert (not event_name is None)
-    file_name = rumour
+    
     # Plot
     reactions = sorted(reactions, key=lambda d: d['created_at'], reverse=False)
     start_time = reactions[0].get("created_at")
@@ -152,6 +187,8 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
         # Stopping condition
         if (curr_day >= end_time):
             break
+        
+        
 
         # Get the end (add 24 hrs)
         end_day = curr_day + timedelta(days=1)
@@ -182,6 +219,17 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
 
         while (len(y_axis)) < (len(x_axis)):
             y_axis.append(0)
+        
+        # Init this days file name
+        file_name = rumour + curr_day.strftime("%m-%d-%Y")
+
+        # Make output directory
+        path_to_output = os.path.join(".", file_name)
+
+        # Create output directory if it does not exist
+        if (not os.path.isdir(path_to_output)):
+            os.mkdir(path_to_output)
+        os.chdir(path_to_output)
 
         # Plot
         plt.title(file_name)
@@ -191,9 +239,68 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
                       markersize=2, color='red')
         plt.gcf().autofmt_xdate()
         plt.tight_layout()
-        plt.savefig(file_name + curr_day.strftime("%m-%d-%Y"))
+        plt.savefig(file_name)
         plt.close()
+
+        # Go to next day
         curr_day += timedelta(days=1)
-    print(file_name + "saved.")
+
+        # Go back one directory
+        os.chdir("..")
+
+def plot_ego_graph(thread, event_name, k=0.5, scale=2, iterations=150):
+        # Draw NetworkX Ego graph for each thread
+
+        # Start by reading who-follows-whom.dat with built in read_edgelist function
+        thread_id = thread.get("thread_id")
+        path_to_who_follows_whom = os.path.join('..', '..', '..', '..','PhemeDataset', 'threads', 
+        'en',event_name,thread_id,'who-follows-whom.dat')
+        
+        if (not os.path.isfile(path_to_who_follows_whom)):
+            return
+        g = None
+        g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
+        
+        plt.axis('off')
+
+        # Draw ego graph where source is the center and node size is proportional to centrality
+        source_id = thread.get("source_tweet").get("user").get("id")
+        source_id = source_id
+
+        # Get centrality for sizing
+        centrality = nx.degree_centrality(g)
+        centrality = [1 + (v * 900) for v in centrality.values()]
+
+        # Create color map
+        color_map = []
+        for node in g:
+            if node == source_id:
+                color_map.append('green')
+            else: 
+                color_map.append('#1f78b4')
+
+        
+        # Set layout
+        sp = nx.spring_layout(g, k=0.5, scale=2, iterations=250)
+
+                
+        nx.draw_networkx_nodes(g, pos=sp,
+        node_color=color_map,
+        node_size=centrality,
+        edgecolors = 'black')
+
+        nx.draw_networkx_edges(g, pos=sp, 
+        arrows=True, width=0.2, edge_color='brown', alpha=0.75)
+        save_name = 'ego-graph-' + thread_id + '.png'
+
+        # Set title of plot to thread_id and number of nodes and edges
+        plt.title(thread_id + " (" + str(g.number_of_nodes()) + " nodes, " + str(g.number_of_edges()) + " edges)")
+
+        
+        plt.savefig(save_name, dpi=250)
+        plt.clf()
+
+        # Print that plot has been saved
+        print("Saved " + save_name)
 
 

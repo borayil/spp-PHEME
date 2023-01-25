@@ -7,7 +7,7 @@ import json
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from matplotlib import dates
-from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_daily
+from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_daily, plot_ego_graph
 
 
 # Plot
@@ -18,6 +18,7 @@ event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 
 event_names = ['charliehebdo']
 
 for event_name in event_names:
+    print('Processing event: ' + event_name)
     # Create output directory if it doesn't exist
     path_to_output = os.path.join('.', 'output')
     if (not os.path.isdir(path_to_output)):
@@ -145,6 +146,9 @@ for event_name in event_names:
         }
         thread_dictionaries.append(thread_dictionary)
 
+    # Print out that we have read in all threads
+    print("Read in all threads from JSON files :)")
+
     # Rank threads by most popular source tweets
     #  w.r.t. nr of total reactions AND nr of reactions who actually follow the user
 
@@ -195,19 +199,38 @@ for event_name in event_names:
             for r in reactions:
                 nonrumour_reactions.append(r)
 
+    # Name of folder to store upcoming plots
+    folder_name = "accumulative"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
+
     plot_reactions_accumulative(
         nonrumour_reactions, event_name, rumour="nonrumour-accumulative")
     plot_reactions_accumulative(
         rumour_reactions, event_name, rumour="rumour-accumulative")
+    
+    # Go back to parent folder
+    os.chdir("..")
 
-    # plot_reactions(nonrumour_reactions, event_name, rumour="-nonrumour")
-    # plot_reactions(rumour_reactions, event_name, rumour="-rumour")
+    # Name of folder to store upcoming plots
+    folder_name = "interval"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
 
-    plot_reactions_daily(nonrumour_reactions, event_name,
-                         rumour="nonrumour-daily")
-    plot_reactions_daily(rumour_reactions, event_name,
-                         rumour="rumour-daily")
+    plot_reactions(nonrumour_reactions, event_name, rumour="nonrumour")
+    plot_reactions(rumour_reactions, event_name, rumour="rumour")
 
+
+    # Name of folder to store upcoming plots
+    folder_name = "interval-top-5-by-reactions"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
     #  Add source tweet amongst reactions, so first reaction is source tweet
     #  Get first 5 threads from thread_dictionaries_by_reactions by index
     top5_thread_dictionaries_by_reactions = thread_dictionaries_by_reactions[:5]
@@ -219,11 +242,17 @@ for event_name in event_names:
         # For each thread t, get the reactions
         reactions = t.get("reactions")
         reactions.append(t.get("source_tweet"))
-        is_rumour_thread = t.get("annotation").get("misinformation") == "1"
-        plot_reactions(reactions, event_name, is_rumour_thread,
+        plot_reactions(reactions, event_name,
                        rumour="top-reactions-no-"+str(no)+"-"+t.get("thread_id"))
         no += 1
+    os.chdir("..")
 
+    # Name of folder to store upcoming plots
+    folder_name = "interval-top-5-by-following"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
     #  Get first 5 threads from thread_dictionaries_by_following by index
     top5_thread_dictionaries_by_following = thread_dictionaries_by_following[:5]
     no = 1
@@ -233,117 +262,69 @@ for event_name in event_names:
         # For each thread t, get the reactions
         reactions = t.get("reactions")
         reactions.append(t.get("source_tweet"))
-        is_rumour_thread = t.get("annotation").get("misinformation") == "1"
-        plot_reactions(reactions, event_name, is_rumour_thread,
+        plot_reactions(reactions, event_name,
                        rumour="top-following-no-"+str(no)+"-"+t.get("thread_id"))
         no += 1
+    os.chdir("..")
 
+    # Go back to parent folder
+    os.chdir("..")
+    
+     # Name of folder to store upcoming plots
+    folder_name = "daily"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
 
-    k_value = 0.5
-    no_iterations = 250
-    # Ego Graphs section 
+    plot_reactions_daily(nonrumour_reactions, event_name,
+                         rumour="nonrumour-daily")
+    plot_reactions_daily(rumour_reactions, event_name,
+                         rumour="rumour-daily")
+
+    # Go back to parent folder
+    os.chdir("..")
+
+    
+
+    # Name of folder to store upcoming plots
+    folder_name = "ego-graphs"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
+
+    # Name of folder to store upcoming plots
+    folder_name = "ego-graphs-top-5-by-following"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
+    
     for t in top5_thread_dictionaries_by_following:
-        # Draw NetworkX Ego graph for each thread
+        plot_ego_graph(t, event_name)
+    os.chdir("..")
 
-        # Start by reading who-follows-whom.dat with built in read_edgelist function
-        thread_id = t.get("thread_id")
-        path_to_who_follows_whom = os.path.join('..', '..','PhemeDataset', 'threads', 
-        'en',event_name,thread_id,'who-follows-whom.dat')
-        
-        if (not os.path.isfile(path_to_who_follows_whom)):
-            continue
-        g = None
-        g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
-        
-        plt.axis('off')
-
-        # Draw ego graph where source is the center and node size is proportional to centrality
-        source_id = t.get("source_tweet").get("user").get("id")
-        source_id = source_id
-
-        # Get centrality for sizing
-        centrality = nx.degree_centrality(g)
-        centrality = [1 + (v * 900) for v in centrality.values()]
-
-        # Create color map
-        color_map = []
-        for node in g:
-            if node == source_id:
-                color_map.append('green')
-            else: 
-                color_map.append('#1f78b4')
-
-        
-        # Set layout
-        sp = nx.spring_layout(g, k=k_value, scale=2, iterations=no_iterations)
-
-                
-        nx.draw_networkx_nodes(g, pos=sp,
-        node_color=color_map,
-        node_size=centrality,
-        edgecolors = 'black')
-
-        nx.draw_networkx_edges(g, pos=sp, 
-        arrows=True, width=0.2, edge_color='gray', alpha=0.75)
-        save_name = 'following-ego-graph-' + thread_id + '.png'
-        plt.savefig(save_name)
-        print(save_name + " saved")
-        #plt.show()
-        plt.close()
+    # Name of folder to store upcoming plots
+    folder_name = "ego-graphs-top-5-by-reactions"
+    # Create folder if it does not exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    os.chdir(folder_name)
     
     # Ego Graphs section 
     for t in top5_thread_dictionaries_by_reactions:
-        # Draw NetworkX Ego graph for each thread
-
-        # Start by reading who-follows-whom.dat with built in read_edgelist function
-        thread_id = t.get("thread_id")
-        path_to_who_follows_whom = os.path.join('..', '..','PhemeDataset', 'threads', 
-        'en',event_name,thread_id,'who-follows-whom.dat')
-        
-        if (not os.path.isfile(path_to_who_follows_whom)):
-            continue
-        g = None
-        g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
-        
-        plt.axis('off')
-
-        # Draw ego graph where source is the center and node size is proportional to centrality
-        source_id = t.get("source_tweet").get("user").get("id")
-        source_id = source_id
-
-        # Get centrality for sizing
-        centrality = nx.degree_centrality(g)
-        centrality = [1 + (v * 900) for v in centrality.values()]
-
-        # Create color map
-        color_map = []
-        for node in g:
-            if node == source_id:
-                color_map.append('green')
-            else: 
-                color_map.append('#1f78b4')
-
-        
-        # Set layout
-        sp = nx.spring_layout(g, k=k_value, scale=2, iterations=no_iterations)
-
-                
-        nx.draw_networkx_nodes(g, pos=sp,
-        node_color=color_map,
-        node_size=centrality,
-        edgecolors = 'black')
-
-        nx.draw_networkx_edges(g, pos=sp, 
-        arrows=True, width=0.2, edge_color='gray', alpha=0.75)
-        save_name = 'reactions-ego-graph-' + thread_id + '.png'
-        plt.savefig(save_name)
-        print(save_name + " saved")
-        #plt.show()
-        plt.close()
+        plot_ego_graph(t, event_name)
     
-    # Change back 2 directories
+    # Change back 2 directories to leave ego-graphs folder back to output/event_name
     os.chdir("..")
     os.chdir("..")
 
-    # 6. When last activity occurs in event
-    # 7. Use the other events, and compare / look for patterns
+    
+    # Change back 2 directories to leave output/event_name folder back to root
+    os.chdir("..")
+    os.chdir("..")
+
+    print("Done processing " + event_name)
+print("All events processed")
+print("*** END ***")
