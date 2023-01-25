@@ -4,7 +4,6 @@ from matplotlib import dates
 from math import ceil
 
 
-
 def plot_reactions_accumulative(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
         return

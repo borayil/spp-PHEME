@@ -1,7 +1,6 @@
 # NOTE: The use of str() to convert user ids is VERY IMPORTANT in this script.
 # Most issued faced when checking / comparing ids was related to this, caused by how JSON files are loaded
 
-from math import ceil
 import os
 import networkx as nx
 import json
