@@ -1,5 +1,5 @@
-# NOTE: The use of str() to convert user ids is VERY IMPORTANT in this script.
-# Most issued faced when checking / comparing ids was related to this, caused by how JSON files are loaded
+# Main script for the longitudinal analysis and other visualizations of the Pheme dataset
+# NOTE: The use of str() to convert user ids is VERY IMPORTANT in this script when comparing etc.
 
 import os
 import networkx as nx
