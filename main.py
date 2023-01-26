@@ -9,12 +9,12 @@ from matplotlib import pyplot as plt
 from matplotlib import dates
 from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_daily, plot_ego_graph
 
-
-# Plot
-# Non-accumulative
-#  Read thread by thread
-event_names = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
+#  All event names in PHEME dataset
+ALL_EVENT_NAMES = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
                'prince-toronto', 'putinmissing', 'sydneysiege']
+
+# For all names, see above of this file (ALL_EVENT_NAMES)
+# Decide on the event names to be used 
 event_names = ['charliehebdo', 'ferguson', 'sydneysiege']
 
 for event_name in event_names:
@@ -135,7 +135,7 @@ for event_name in event_names:
         with open(path_to_annotation, 'r') as f:
             annotation = json.load(f)
 
-        # Combine these in dictionary and add to list of dictionaries for each thread
+        # Form the dictionary for the current thread being processed
         thread_dictionary = {
             'thread_id': thread_id,  # same as source_tweet id
             'source_tweet': source_tweet,
@@ -144,13 +144,12 @@ for event_name in event_names:
             'annotation': annotation,
             'user_follow_dictionary': user_follow_dictionary,
         }
+
+        # Add this threads dictionary to the list collection of all threads
         thread_dictionaries.append(thread_dictionary)
 
     # Print out that we have read in all threads
     print("Read in all threads from JSON files :)")
-
-    # Rank threads by most popular source tweets
-    #  w.r.t. nr of total reactions AND nr of reactions who actually follow the user
 
     # w.r.t. nr of total reactions (highest to lowest)
     thread_dictionaries_by_reactions = sorted(

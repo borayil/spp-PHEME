@@ -70,6 +70,9 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
         peak_value = max(y_axis)
         time_diff = peak_time - first_time
         last_activity_time = x_axis[y_axis.index(1)]
+        f.write("Time interval used: " + str(min_interval) + " minutes" + "\n")
+        print("Time interval used: " + str(min_interval) + " minutes")
+        f.write("First time: " + str(first_time) + "\n")
         f.write("Peak time: " + str(peak_time) + "\n")
         f.write("Peak value: " + str(peak_value) + "\n")
         f.write("Last activity time: " + str(last_activity_time) + "\n")
@@ -151,6 +154,9 @@ def plot_reactions(reactions, event_name, rumour=""):
         peak_value = max(y_axis)
         time_diff = peak_time - first_time
         last_activity_time = x_axis[y_axis.index(1)]
+        f.write("Source time: " + str(first_time) + "\n")
+        f.write("Time interval used: " + str(min_interval) + " minutes" + "\n")
+        print("Time interval used: " + str(min_interval) + " minutes")
         f.write("Peak time: " + str(peak_time) + "\n")
         f.write("Peak value: " + str(peak_value) + "\n")
         f.write("Last activity time: " + str(last_activity_time) + "\n")
@@ -249,7 +255,7 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
         # Go back one directory
         os.chdir("..")
 
-def plot_ego_graph(thread, event_name, k=0.62, scale=1, iterations=100):
+def plot_ego_graph(thread, event_name, k=0.4, scale=2, iterations=215):
 
 
         # Draw NetworkX Ego graph for each thread
