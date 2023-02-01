@@ -1,13 +1,14 @@
-# Main script for the longitudinal analysis and other visualizations of the Pheme dataset
-# NOTE: The use of str() to convert user ids is VERY IMPORTANT in this script when comparing etc.
-
+# Description: Main script for the longitudinal analysis and other visualizations of the Pheme dataset
 import os
 import networkx as nx
 import json
+import requests
+import scipy # For matrix convertion error with networkx
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from matplotlib import dates
 from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_daily, plot_ego_graph
+import tarfile
 
 #  All event names in PHEME dataset
 ALL_EVENT_NAMES = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-crash', 'ottawashooting',
@@ -16,6 +17,28 @@ ALL_EVENT_NAMES = ['charliehebdo', 'ebola-essien', 'ferguson', 'germanwings-cras
 # For all names, see above of this file (ALL_EVENT_NAMES)
 # Decide on the event names to be used 
 event_names = ['charliehebdo', 'ferguson', 'sydneysiege']
+print('Using the following events: ' + str(event_names))
+
+# Check if Pheme dataset is present
+url = 'https://ndownloader.figshare.com/files/4988998'
+target_path = 'phemerumourschemedataset.tar.bz2'
+if (not os.path.isdir(os.path.join('.', 'PhemeDataset'))):
+    # Download dataset, and unzip it.
+    try:
+        print('Pheme dataset not found in current directory. Downloading from ' + url)
+        print('This may take a few minutes (129.89 MB to be downloaded and extracted)')
+        response = requests.get(url, stream=True)
+        file = tarfile.open(fileobj=response.raw, mode="r|bz2")
+        file.extractall(path=".")
+        # Rename the extracted directory
+        os.rename('pheme-rumour-scheme-dataset', 'PhemeDataset')
+        print('Pheme dataset downloaded and extracted successfully.')
+    except Exception as e:
+        print('Could not download and extract Pheme dataset. Please download it manually from ' + url + ' and extract it to the current directory. Then rename it to "PhemeDataset".')
+        print('Error: ' + str(e))
+    exit()
+else:
+    print('Pheme dataset found in current directory. Continuing...')
 
 for event_name in event_names:
     print('Processing event: ' + event_name)
@@ -42,7 +65,7 @@ for event_name in event_names:
     path_to_event = os.path.join(
         '..', '..', 'PhemeDataset', 'threads', 'en', event_name)
 
-    # Store all source user ids
+    # Store all source user ids, for later use
     for filename in os.listdir(path_to_event):
         thread_id = filename
         path_to_thread = os.path.join(path_to_event, filename)
@@ -78,6 +101,8 @@ for event_name in event_names:
             #  user1 follows user2
             follow_tuples.append((user1, user2))
 
+        # From follow tuples, create a dictionary of users and their followers and following
+        # We use a dictionary to make it easier to index via id
         for t in follow_tuples:
             user1 = t[0]
             user2 = t[1]
@@ -101,8 +126,6 @@ for event_name in event_names:
                 user_follow_dictionary[user2]['is_source_user'] = True
             else:
                 user_follow_dictionary[user2]['is_source_user'] = False
-
-        # We use a dictionary to make it easier to index via id
 
         # Read in source tweet(s)
         path_to_source_tweet = os.path.join(
@@ -135,7 +158,7 @@ for event_name in event_names:
         with open(path_to_annotation, 'r') as f:
             annotation = json.load(f)
 
-        # Form the dictionary for the current thread being processed
+        # Form the dictionary for the current thread being processed, using the above data that we have read in
         thread_dictionary = {
             'thread_id': thread_id,  # same as source_tweet id
             'source_tweet': source_tweet,
@@ -145,7 +168,7 @@ for event_name in event_names:
             'user_follow_dictionary': user_follow_dictionary,
         }
 
-        # Add this threads dictionary to the list collection of all threads
+        # Add this current thread's dictionary to the list collection of all threads, named thread_dictionaries
         thread_dictionaries.append(thread_dictionary)
 
     # Print out that we have read in all threads
