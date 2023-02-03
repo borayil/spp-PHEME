@@ -1,12 +1,12 @@
+# Author: Bora Yilmaz
+# Title: Longitudinal Analysis and Visualization of Network Data 
 # Description: Main script for the longitudinal analysis and other visualizations of the Pheme dataset
 import os
 import networkx as nx
 import json
 import requests
 import scipy # For matrix convertion error with networkx
-from datetime import datetime, timedelta
-from matplotlib import pyplot as plt
-from matplotlib import dates
+from datetime import datetime
 from plotting import plot_reactions_accumulative, plot_reactions, plot_reactions_daily, plot_ego_graph
 import tarfile
 

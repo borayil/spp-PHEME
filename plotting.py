@@ -1,11 +1,13 @@
+# Author: Bora Yilmaz
+# Title: Longitudinal Analysis and Visualization of Network Data 
+# Description: Plotting functions for the rumour data
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
-from matplotlib import dates
 from math import ceil
 import os
 import networkx as nx
-from math import sqrt
 
+# Plot given reactions, with the given event name, in an accumulative manner
 def plot_reactions_accumulative(reactions, event_name, rumour=""):
     if len(reactions) <= 0:
         return
@@ -87,7 +89,8 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
     # Print art denoting end
     print("====================================")
 
-
+# Plot given reactions, with the given event name, in a non-accumulative manner, 
+# using a sliding window of min_interval minutes
 def plot_reactions(reactions, event_name, rumour=""):
 
     if len(reactions) <= 0:
@@ -164,7 +167,6 @@ def plot_reactions(reactions, event_name, rumour=""):
         print("Peak value: " + str(peak_value))
         print("Last activity time: " + str(last_activity_time))
         print("Time from source to peak: " + str(time_diff))
-
 
     # Go back one directory
     os.chdir("..")
@@ -253,11 +255,9 @@ def plot_reactions_daily(reactions, event_name, rumour=""):
         # Go back one directory
         os.chdir("..")
 
+ # Draw NetworkX Ego graph for given thread of given event
 def plot_ego_graph(thread, event_name, k=0.4, scale=2, iterations=215):
-
-
-        # Draw NetworkX Ego graph for each thread
-
+       
         # Start by reading who-follows-whom.dat with built in read_edgelist function
         thread_id = thread.get("thread_id")
         path_to_who_follows_whom = os.path.join('..', '..', '..', '..','PhemeDataset', 'threads', 
@@ -267,14 +267,8 @@ def plot_ego_graph(thread, event_name, k=0.4, scale=2, iterations=215):
             return
         g = None
         g = nx.read_edgelist(path_to_who_follows_whom, create_using=nx.Graph(), nodetype=int)
+    
         
-        plt.axis('off')
-
-        # Make networkx graph bigger
-        #plt.figure(figsize=(12,12))
-
-
-
         # Draw ego graph where source is the center and node size is proportional to centrality
         source_id = thread.get("source_tweet").get("user").get("id")
         source_id = source_id
@@ -290,23 +284,26 @@ def plot_ego_graph(thread, event_name, k=0.4, scale=2, iterations=215):
                 color_map.append('green')
             else: 
                 color_map.append('#1f78b4')
+
+        # Remove axis
+        plt.axis('off')
         
         # Set layout
         sp = nx.spring_layout(g, k=k, scale=scale, iterations=iterations)
-       
+
+        # Draw nodes and edges
         nx.draw_networkx_nodes(g, pos=sp,
         node_color=color_map,
         node_size=centrality,
         edgecolors = 'black')
-
         nx.draw_networkx_edges(g, pos=sp, node_size=centrality,
         arrows=False, width=0.3, edge_color='brown', alpha=0.8)
         save_name = 'ego-graph-' + thread_id + '.png'
 
+        
+
         # Set title of plot to thread_id and number of nodes and edges
         plt.title(thread_id + " (" + str(g.number_of_nodes()) + " nodes, " + str(g.number_of_edges()) + " edges)")
-
-        
         plt.savefig(save_name, dpi=250)
         plt.clf()
 
