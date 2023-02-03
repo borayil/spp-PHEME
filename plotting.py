@@ -11,8 +11,6 @@ def plot_reactions_accumulative(reactions, event_name, rumour=""):
         return
     assert (not event_name is None)
 
-    
-
     # Plot rumour
     reactions = sorted(reactions, key=lambda d: d['created_at'], reverse=False)
     start_time = reactions[0].get("created_at")

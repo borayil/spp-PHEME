@@ -40,6 +40,7 @@ if (not os.path.isdir(os.path.join('.', 'PhemeDataset'))):
 else:
     print('Pheme dataset found in current directory. Continuing...')
 
+# Iterate over all events
 for event_name in event_names:
     print('Processing event: ' + event_name)
     # Create output directory if it doesn't exist
@@ -56,12 +57,14 @@ for event_name in event_names:
     # Change into the output directory
     os.chdir(path_to_output)
 
-    # Go to initial dir
+    # Initialize our data structures
     follow_tuples = []
     user_follow_dictionary = {}
     user_follow_list = []
     source_user_ids = []
     thread_dictionaries = []
+
+    # Formulate the path to the event
     path_to_event = os.path.join(
         '..', '..', 'PhemeDataset', 'threads', 'en', event_name)
 
@@ -80,6 +83,7 @@ for event_name in event_names:
             if (not sid in source_user_ids):
                 source_user_ids.append(str(sid))
 
+    # Iterate over all threads
     for filename in os.listdir(path_to_event):
         thread_id = filename
         path_to_thread = os.path.join(path_to_event, filename)
