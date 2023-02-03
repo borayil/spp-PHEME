@@ -36,7 +36,6 @@ if (not os.path.isdir(os.path.join('.', 'PhemeDataset'))):
     except Exception as e:
         print('Could not download and extract Pheme dataset. Please download it manually from ' + url + ' and extract it to the current directory. Then rename it to "PhemeDataset".')
         print('Error: ' + str(e))
-    exit()
 else:
     print('Pheme dataset found in current directory. Continuing...')
 
