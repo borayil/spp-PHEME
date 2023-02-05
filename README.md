@@ -4,7 +4,7 @@ Python code for the short programming project (spp) course at the University of 
 
 This code is used to read, prepare and perform longitudinal analysis, extract key insight values and create Ego graphs on the [PHEME Rumour Dataset](https://www.pheme.eu/2016/06/13/pheme-rumour-dataset-support-certainty-and-evidentiality/). You can find comments on all sections and functions. Below are example outputs.
 
-<p align="middle">!
+<p align="middle">
   <img src="https://user-images.githubusercontent.com/56681820/216842096-7dba9424-f12a-4efd-a574-8408adbde973.png" width=30% />
   <img src="https://user-images.githubusercontent.com/56681820/216842103-9b867829-5181-4193-8ce1-26139ca5208f.png" width=30% /> 
 </p>
